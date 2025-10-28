@@ -5,6 +5,32 @@ import numexpr
 from langchain_chroma import Chroma
 from langchain_core.tools import BaseTool, tool
 from langchain_openai import OpenAIEmbeddings
+from langchain_community.utilities import SearchApiAPIWrapper
+from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_google_community import GoogleSearchAPIWrapper
+
+
+@tool
+def Google_Search(query: str) -> str:
+    """A wrapper around Google Search. Use this for complex queries."""
+    # The wrapper automatically finds the keys from your environment
+    search_wrapper = GoogleSearchAPIWrapper()
+    return search_wrapper.run(f"retrive linkedin profiles links {query}")
+
+@tool
+def SearchAPI(query: str) -> str:
+    """A tool that uses the SearchApi.io service to get Google search results. 
+    Useful for executing complex search queries with operators like 'site:' and boolean logic."""
+    # The wrapper automatically finds the SEARCHAPI_API_KEY from your environment
+    search_wrapper = SearchApiAPIWrapper()
+    return search_wrapper.run(f"retrive linkedin profiles links {query}")
+
+@tool
+def DuckDuckGo_Search(query: str) -> str:
+    """A wrapper around DuckDuckGo Search. Useful for when you need to answer questions about current events. 
+    Input should be a search query."""
+    search_run = DuckDuckGoSearchRun()
+    return search_run.run(f"retrive linkedin profiles links {query}")
 
 
 def calculator_func(expression: str) -> str:
