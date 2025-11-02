@@ -66,6 +66,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     Configurable lifespan that initializes the appropriate database checkpointer, store,
     and agents with async loading - for example for starting up MCP clients.
     """
+
     try:
         # Initialize both checkpointer (for short-term memory) and store (for long-term memory)
         async with initialize_database() as saver, initialize_store() as store:

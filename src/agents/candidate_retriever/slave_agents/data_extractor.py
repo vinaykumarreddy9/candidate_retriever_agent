@@ -1,31 +1,40 @@
 from agents.candidate_retriever.graph.state import RecruitmentState
 from agents.candidate_retriever.graph.prompts import DATA_EXTRACTOR_PROMPT
-from agents.tools import DuckDuckGo_Search, Google_Search,SearchAPI
-from langchain_core.messages import ToolMessage
+from agents.tools import SerpAPI_LinkedIn_Search
+from langchain_core.messages import AIMessage
 from core import get_model, settings
-
 from langchain_core.runnables import RunnableConfig
 
 
 async def data_extractor_node(state: RecruitmentState, config: RunnableConfig) -> dict:
-    """Data extraction agent that extracts data besed on Boolean query from the web."""
-
-    print("---NODE: Extracting Data from Web---")
+    """
+    Data extraction agent that finds profile URLs and formats the final response.
+    """
     model = get_model(config["configurable"].get("model", settings.DEFAULT_MODEL))
-    tools = [DuckDuckGo_Search, Google_Search, SearchAPI]
+    tools = [SerpAPI_LinkedIn_Search]
     
-    # We use a simple agent that is forced to call a tool
     prompt = DATA_EXTRACTOR_PROMPT.format(query=state['boolean_query'])
+    
     agent_runnable = model.bind_tools(tools)
     response = await agent_runnable.ainvoke(prompt)
     
-    # response is an AIMessage with tool_calls
-    tool_message = ToolMessage(content="No tool was called by the agent.", tool_call_id="")
+    search_content = "The agent failed to call the search tool."
+    
     if response.tool_calls:
         tool_call = response.tool_calls[0]
-        tool_to_use = {"Google_Search": Google_Search, "DuckDuckGo_Search": DuckDuckGo_Search, "SearchAPI": SearchAPI}[tool_call['name']]
-        tool_output = await tool_to_use.ainvoke(tool_call['args'])
-        tool_message = ToolMessage(content=str(tool_output), tool_call_id=tool_call['id'])
+        tool_output = await SerpAPI_LinkedIn_Search.ainvoke(tool_call['args'])
+        search_content = str(tool_output)
 
-    return {"search_results": tool_message.content}
+    if "No LinkedIn profiles found" in search_content or "failed" in search_content:
+        final_message_content = "I was unable to find any suitable candidates for your query."
+    else:
+        urls = search_content.strip().split('\n')
+        markdown_links = "\n".join(f"- {url}" for url in urls)
+        final_message_content = f"I found the following {len(urls)} LinkedIn profiles for you:\n\n{markdown_links}"
 
+    final_message = AIMessage(content=final_message_content)
+
+    return {
+        "search_results": search_content,
+        "messages": [final_message]
+    }

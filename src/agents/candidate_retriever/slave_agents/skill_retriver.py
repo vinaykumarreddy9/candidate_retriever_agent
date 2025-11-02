@@ -9,7 +9,6 @@ from langchain_core.runnables import RunnableConfig
 async def skill_extractor_node(state: RecruitmentState, config: RunnableConfig) -> dict:
     """Skill extractor node that extract the skills from job description."""
 
-    print("---NODE: Extracting Skills---")
     model = get_model(config["configurable"].get("model", settings.DEFAULT_MODEL))
     prompt = SKILL_RETRIEVER_PROMPT.format(job_description=state["job_description"])
     response = await model.ainvoke(prompt)

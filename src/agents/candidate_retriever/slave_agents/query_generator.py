@@ -9,7 +9,6 @@ from langchain_core.runnables import RunnableConfig
 async def query_generator_node(state: RecruitmentState, config: RunnableConfig) -> dict:
     """Query Generation Node that generates Boolean Query based on retrieved skills."""
 
-    print("---NODE: Generating Boolean Query---")
     model = get_model(config["configurable"].get("model", settings.DEFAULT_MODEL))
     skills_str = json.dumps(state["extracted_skills"])
     prompt = BOOLEAN_QUERY_PROMPT.format(skills=skills_str)

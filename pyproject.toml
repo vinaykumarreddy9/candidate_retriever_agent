@@ -16,6 +16,7 @@ classifiers = [
 requires-python = ">=3.11"
 
 dependencies = [
+    "async-lru",
     "docx2txt ~=0.8",
     "duckduckgo-search>=7.3.0",
     "fastapi ~=0.115.5",
@@ -58,7 +59,8 @@ dependencies = [
     "langchain-mcp-adapters>=0.1.10",
     "google-search-results",
     "langchain-google-community",
-    "google-api-python-client==2.185.0"
+    "google-api-python-client==2.185.0",
+    
 ]
 
 [dependency-groups]
